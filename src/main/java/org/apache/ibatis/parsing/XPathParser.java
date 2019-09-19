@@ -56,11 +56,18 @@ public class XPathParser {
   private boolean validation;
 
   /**
-   * XML 实体解析器
+   * XML 实体解析器(相当于使用本地DTD文件进行XML语法验证)
    */
   private EntityResolver entityResolver;
 
+  /**
+   * (key,value)形式
+   */
   private Properties variables;
+
+  /**
+   * 文档解析器 （解析节点和元素）
+   */
   private XPath xpath;
 
   public XPathParser(String xml) {
@@ -123,6 +130,13 @@ public class XPathParser {
     this.document = document;
   }
 
+  /**
+   *
+   * @param xml 文件地址
+   * @param validation 是否验证
+   * @param variables  变量 properties对象
+   * @param entityResolver XML实体解析器
+   */
   public XPathParser(String xml, boolean validation, Properties variables, EntityResolver entityResolver) {
     commonConstructor(validation, variables, entityResolver);
     this.document = createDocument(new InputSource(new StringReader(xml)));
@@ -230,6 +244,13 @@ public class XPathParser {
     return new XNode(this, node, variables);
   }
 
+  /**
+   *
+   * @param expression 表达式
+   * @param root 指定节点
+   * @param returnType 返回类型
+   * @return
+   */
   private Object evaluate(String expression, Object root, QName returnType) {
     try {
       return xpath.evaluate(expression, root, returnType);
@@ -243,7 +264,7 @@ public class XPathParser {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      factory.setValidating(validation);
+      factory.setValidating(validation);//设置是否验证XML
 
       factory.setNamespaceAware(false);
       factory.setIgnoringComments(true);
@@ -251,6 +272,7 @@ public class XPathParser {
       factory.setCoalescing(false);
       factory.setExpandEntityReferences(true);
 
+      //创建DocumentBuilder对象
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setEntityResolver(entityResolver);
       builder.setErrorHandler(new ErrorHandler() {
@@ -269,6 +291,8 @@ public class XPathParser {
           // NOP
         }
       });
+
+      //获取Document对象
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);
@@ -279,6 +303,9 @@ public class XPathParser {
     this.validation = validation;
     this.entityResolver = entityResolver;
     this.variables = variables;
+    /**
+     * 创建了XPathFactory对象
+     */
     XPathFactory factory = XPathFactory.newInstance();
     this.xpath = factory.newXPath();
   }
