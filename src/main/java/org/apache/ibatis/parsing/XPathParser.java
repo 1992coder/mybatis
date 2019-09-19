@@ -54,7 +54,12 @@ public class XPathParser {
    * 是否校验
    */
   private boolean validation;
+
+  /**
+   * XML 实体解析器
+   */
   private EntityResolver entityResolver;
+
   private Properties variables;
   private XPath xpath;
 
